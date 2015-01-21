@@ -1,0 +1,94 @@
+﻿@using schedule_organiser
+@{
+    ViewBag.Title = MvcApplication.GetDisplayNameFor("homePage_title", "Home");
+}
+        @if(Request.IsAuthenticated){
+            <script>
+                $(function () {
+                    window.location.href = "@Url.Action("Index", "Main")"
+                });
+            </script>
+        }
+
+        <header>
+            <ul>
+                <li>@Html.ActionLink(MvcApplication.GetDisplayNameFor("register_link", "Account"), "Register", "Account", routeValues: null, htmlAttributes: new { id = "register_link" })</li>
+                <li>@Html.ActionLink(MvcApplication.GetDisplayNameFor("login_link", "Account"), "Login", "Account", routeValues: null, htmlAttributes: new { id = "login_link" })</li>
+            </ul>
+
+            <div id="language_Dropdown">
+                <div id="languageSelector_container">
+                    <button id="languageSelector_launcher">Select an action</button>
+                </div>
+                <ul id="languageSelector_menu">
+                    @foreach (string s in MvcApplication.LanguageAgent.LanguageComboBoxItems)
+                    {
+                        <li id="@s"><a href="javascript:void(0)"><img width="40" height="25" src="@Url.Content("~/Content/languages/flags/" + s + ".GIF")" />
+                            @schedule_organiser.Content.languages.Resource_Languages.ResourceManager.GetString(s)</a></li>
+                    }
+                </ul>
+        </div>
+        </header>  
+
+@section Styles {
+        <link rel="stylesheet" href="~/Content/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="~/Scripts/jui_dropdown/jquery.jui_dropdown.css">
+        <style>
+            header ul li {
+                display: inline;    
+                padding: 7px 7px 7px 7px;
+                text-transform: uppercase;           
+            }
+
+            header ul li:hover {
+                border-radius: 10px;
+                -moz-border-radius: 10px;
+                -webkit-border-radius: 10px;
+
+                background-color: aqua;
+            }
+        </style>
+}
+@section Scripts {
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/jqueryui")
+        <script type="text/javascript" src="~/Scripts/jui_dropdown/jquery.jui_dropdown.min.js"></script>
+
+      <script>
+          $(document).ready(function (e) {
+              try {
+                  $("#language_Dropdown").jui_dropdown({
+                      launcher_id: 'languageSelector_launcher',
+                      launcher_container_id: 'languageSelector_container',
+                      menu_id: 'languageSelector_menu',
+                      onSelect: function (event, data) {
+                          $.ajax({
+                              type: "POST",
+                              traditional: true,
+                              url: "@Url.Action("LanguageChange", "Home")",
+                                data: { newLanguage: data.id },
+                                success: function (data, textStatus, jqXHR) {
+                                    if (textStatus == "success") {
+                                        var obj = $.parseJSON(data.LanguageDataSetHome);
+                                        $.merge(obj, $.parseJSON(data.LanguageDataSetAccount));
+                                        var all = document.getElementsByTagName("*");
+                                        $.each(obj, function (index, row) {
+                                            $.each(all, function (id, element) {
+                                                if (row.Element_name == element.id)
+                                                    $(element).text(row.Element_value);
+                                            })
+                                        })
+                                    } else {
+                                        throw ErrorEvent();
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+                catch (e) {
+                    alert(e.message);
+                }
+            });
+        </script>      
+}

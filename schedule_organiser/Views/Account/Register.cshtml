@@ -1,0 +1,192 @@
+﻿@using schedule_organiser
+@using System.Globalization
+@model schedule_organiser.Models.RegisterModel
+
+@{
+    ViewBag.Title = MvcApplication.GetDisplayNameFor("registerPage_title", "Account");
+}
+         @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { onsubmit = "return verification();" }))
+         {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true)
+                <fieldset style="width:50%; margin:0 auto;">
+                    <legend id="registrationForm_legend">
+                        @MvcApplication.GetDisplayNameFor("registrationForm_legend", "Account")
+                    </legend>
+                    <table style="text-align:center; width:100%; table-layout:fixed">
+                        <tr style="height:50px">
+                            <td>@Html.TextBoxFor(model => model.FirstName, new { placeholder = Html.DisplayNameFor(model => model.FirstName), @class = "rounded", style="width:70%", id="FirstName" })</td>
+                            <td>@Html.TextBoxFor(model => model.LastName, new { placeholder = Html.DisplayNameFor(model => model.LastName), @class = "rounded", style="width:70%", id="LastName" })</td>         
+                        </tr>
+                        <tr style="height:50px">
+                            <td>@Html.TextBoxFor(model => model.Email, new { placeholder = Html.DisplayNameFor(model => model.Email), @class = "rounded", style="width:70%", id="Email" })</td>
+                            <td>@Html.TextBoxFor(model => model.RepeatEmail, new { placeholder = Html.DisplayNameFor(model => model.RepeatEmail), @class = "rounded", style="width:70%", id="RepeatEmail" })</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.ValidationMessageFor(model => model.Email, string.Empty, new { @class = "validationMessages" })</td>
+                            <td>@Html.ValidationMessageFor(model => model.RepeatEmail, string.Empty, new { @class = "validationMessages" })</td>
+                        </tr>
+                        <tr style="height:50px">
+                            <td>@Html.PasswordFor(model => model.Password, new { placeholder = Html.DisplayNameFor(model => model.Password), @class = "rounded", style="width:70%", id="Password" })</td>
+                            <td>@Html.PasswordFor(model => model.RepeatPassword, new { placeholder = Html.DisplayNameFor(model => model.RepeatPassword), @class = "rounded", style="width:70%", id="RepeatPassword" })</td>
+                        </tr>
+                        <tr>
+                            <td>@Html.ValidationMessageFor(model => model.Password, string.Empty, new { @class = "validationMessages" })</td>
+                            <td>@Html.ValidationMessageFor(model => model.RepeatPassword, string.Empty, new { @class = "validationMessages" })</td>
+                        </tr>
+                        <tr>
+                            <td id="additionalPassQues_details" style="text-align:center;font-size:14px;font-weight:bold" colspan="2">
+                                @MvcApplication.GetDisplayNameFor("additionalPassQues_details", "Account")
+                            </td>
+                        </tr>
+                        <tr style="height:50px">
+                            <td>@Html.TextBoxFor(model => model.PasswordQuestion, new { placeholder = HttpUtility.HtmlDecode(Html.DisplayNameFor(model => model.PasswordQuestion).ToHtmlString()), @class = "rounded", style = "width:70%", id="PasswordQuestion" })</td>
+                            <td>@Html.TextBoxFor(model => model.PasswordAnswer, new { placeholder = HttpUtility.HtmlDecode(Html.DisplayNameFor(model => model.PasswordAnswer).ToHtmlString()), @class = "rounded", style="width:70%", autocomplete = "off", id="PasswordAnswer" })</td>
+                        </tr>
+                        <tr style="height:50px;font-size:14px;font-weight:bold;">
+                            <td>
+                                <p style="display:inline" id="dateOfBirth_label">
+                                    @MvcApplication.GetDisplayNameFor("dateOfBirth_label", "Account")
+                                </p>
+                                <br />
+                                <select onchange="ageVerification()" name="Day" id="day">
+                                    <option id="birthDAY_firstOption">@MvcApplication.GetDisplayNameFor("birthDAY_firstOption", "Account")</option>
+                                    @for (int i = 1; i <= 31; i++) {
+                                        <option>@i</option>
+                                    }
+                                </select>
+                                <select onchange="ageVerification()" name="Month" id="month">
+                                    <option id="birthMONTH_firstOption">@MvcApplication.GetDisplayNameFor("birthMONTH_firstOption", "Account")</option>
+                                    @foreach (string s in DateTimeFormatInfo.CurrentInfo.AbbreviatedMonthNames) {
+                                        <option>@s.Trim('.')</option>
+                                    }
+                                </select>
+                                <select onchange="ageVerification()" name="Year" id="year">
+                                    <option id="birthYEAR_firstOption">@MvcApplication.GetDisplayNameFor("birthYEAR_firstOption", "Account")</option>
+                                    @for (int i = DateTime.Today.Year; i >= 1900; i--) {
+                                        <option>@i</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <p style="display:inline" id="gender_label">
+                                    @MvcApplication.GetDisplayNameFor("gender_label", "Account")
+                                </p>
+                                <br />
+                                <input type="radio" name="sex" onclick="sexVerification()" value="m" /> @MvcApplication.GetDisplayNameFor("gender_m", "Account") 
+                                <input type="radio" name="sex" onclick="sexVerification()" value="f" /> @MvcApplication.GetDisplayNameFor("gender_f", "Account")
+                            </td>
+                        </tr>
+                        <tr class = "validationMessages" style="color:red">
+                            <td id="dateOfBirthRequired_error"></td>
+                            <td id="genderNotSelected_error"></td>
+                        </tr>
+                    </table>
+                    <br />
+                    <div style="text-align:center;">
+                        @Html.CheckBoxFor(model => model.AgreeToTerms_Conditions, new { id = "AgreeToTerms_Conditions" }) 
+                        <div style="font-size:14px;font-weight:bolder;display:inline">
+                            <p id="Terms_Cond1" style="display:inline">
+                                @MvcApplication.GetDisplayNameFor("Terms&Cond1", "Account")
+                            </p>
+                            <div id="Terms_Cond2" style="text-decoration:underline; color:blue; cursor:pointer;display:inline">
+                                @MvcApplication.GetDisplayNameFor("Terms&Cond2", "Account")
+                            </div> 
+                            <p id="Terms_Cond3" style="display:inline">
+                                @MvcApplication.GetDisplayNameFor("Terms&Cond3", "Account")
+                            </p>
+                        </div>
+                        <br /><br />
+                        <input type="submit" value="Register" />
+                    </div>
+                </fieldset>
+         }
+
+        <div id="terms-modal" title="Basic modal dialog">
+          <p>Adding the modal overlay screen makes the dialog look more prominent because it dims out the page content.</p>
+        </div>
+
+@section Styles {
+        @Styles.Render("~/Content/themes/base/css")
+}
+
+@section Scripts {
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/jqueryvalidation")
+        <script>
+            function verification() {
+                var age = ageVerification();
+                var sex = sexVerification();
+                var terms = termsAgreement();
+
+                return (age == true && sex == true && terms == true);
+            }
+
+            function termsAgreement() { 
+                if ( $('input[type=checkbox][id=AgreeToTerms_Conditions]:checked').length == 0) {
+                    alert("@MvcApplication.GetDisplayNameFor("termsNotAgreed_error", "Account")");
+                    $('input[type=checkbox][id=AgreeToTerms_Conditions]').focus();
+                    return false;
+                }
+                return true;
+            }
+            function ageVerification() {
+                var dd = document.getElementsByName("Day")[0].selectedIndex;
+                var mm = document.getElementsByName("Month")[0].selectedIndex - 1;
+                var yyyy = new Date().getFullYear() - document.getElementsByName("Year")[0].selectedIndex + 1;
+
+                if(dd == 0 || mm == -1 || document.getElementsByName("Year")[0].selectedIndex == 0){
+                    $('#dateOfBirthRequired_error').text("@MvcApplication.LanguageAgent.LanguageDataSet.Tables["Account"].Select("Element_name = 'DateOfBirthRequired_error'")[0][1]");
+                    return false;
+                }
+
+                var date_birth = new Date(yyyy, mm, dd);
+                date_birth.setFullYear(date_birth.getFullYear() + 13);
+                var date_today = new Date();
+                date_today.setHours(0, 0, 0, 0);
+
+                if(date_birth > date_today) {
+                    $('#dateOfBirthRequired_error').text("@MvcApplication.GetDisplayNameFor("tooYoung_error", "Account")");
+                    return false;
+                }
+                $('#dateOfBirthRequired_error').text("");
+                return true;
+            }
+
+            function sexVerification() {
+                if( $('input[type=radio][name=sex]:checked').length == 0 ) {
+                    $('#genderNotSelected_error').text("@Html.Raw(MvcApplication.GetDisplayNameFor("genderNotSelected_error", "Account"))");
+                    return false;
+                }
+                $('#genderNotSelected_error').text("");
+                return true;
+            }
+        </script>
+        <script> //AUTOCOMPLETE SECURITY_QUESTION OPTIONS
+            $(function () {
+                $("#PasswordQuestion")
+                    .autocomplete({
+                        source: @Html.Raw(ViewBag.availableSecurityQuestions),
+                        minLength: 0
+                    })
+                    .focus(function () {
+                        $(this).autocomplete("search");
+                    });
+            });
+        </script>
+        <script> //TERMS&CONDITIONS "POP-UP"
+            $(function () {
+                $("#terms-modal").dialog({
+                    autoOpen: false,
+                    height: 140,
+                    modal: true
+                });
+
+                $("#Terms_Cond2")
+                    .mousedown(function () {
+                        $("#terms-modal").dialog("open");
+                    });
+            });
+        </script> 
+}

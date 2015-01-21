@@ -1,0 +1,239 @@
+﻿@using schedule_organiser
+@model schedule_organiser.Models.LoginModel
+@{
+    ViewBag.Title = MvcApplication.GetDisplayNameFor("loginPage_title", "Account");
+}
+        @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true)
+            <fieldset style="width:30%; margin:0 auto;">
+                <legend id="loginForm_legend">@MvcApplication.GetDisplayNameFor("loginForm_legend", "Account")</legend>
+                <table style="text-align:center; width:100%; table-layout:fixed">
+                    <tr style="height:50px">
+                        <td>@Html.TextBoxFor(model => model.Email, new { placeholder = Html.DisplayNameFor(model => model.Email), @class = "rounded", style = "width:70%", id = "email_textBox" })</td>
+                    </tr>
+                    <tr style="height:75px">
+                        <td>
+                            @Html.PasswordFor(model => model.Password, new { placeholder = Html.DisplayNameFor(model => model.Password), @class = "rounded", style = "width:70%", id = "password_passwordBox" })
+                            <br />
+                            <p style="display:inline; text-decoration:underline; color:blue; cursor:pointer;width:auto" id="forgotPassword_label">
+                                @MvcApplication.GetDisplayNameFor("forgotPassword_label", "Account")
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <div style="text-align:center;">
+                    @Html.CheckBoxFor(model => model.RememberMe, new { id = "rememberMe_checkBox" })
+                    <p style="display:inline" id="rememberMe_label">
+                        @MvcApplication.GetDisplayNameFor("rememberMe_label", "Account")
+                    </p>
+                    <br />
+                    <input type="submit" id="login_button" value="@MvcApplication.GetDisplayNameFor("login_button", "Account")" />
+                    <br />
+                    <div id="fbButton" class="zocial facebook">@MvcApplication.GetDisplayNameFor("facebookLogin_text", "Account")</div>
+                </div>
+            </fieldset>
+        }
+
+        <div id="forgotPassword_tabs">
+            <ul>
+                <li><a id="forgotPasswordStep0_title" href="#tabs-0">
+                    @MvcApplication.GetDisplayNameFor("forgotPasswordStep0_title", "Account")</a></li>
+                <li><a id="forgotPasswordStep1_title" href="#tabs-1">
+                    @MvcApplication.GetDisplayNameFor("forgotPasswordStep1_title", "Account")</a></li>
+                <li><a id="forgotPasswordStep2_title" href="#tabs-2">
+                    @MvcApplication.GetDisplayNameFor("forgotPasswordStep2_title", "Account")</a></li>
+            </ul>
+            <div id="tabs-0">
+                <fieldset style="width:90%; margin:auto;">
+                    <legend id="forgotPasswordStep0_legend">@MvcApplication.GetDisplayNameFor("forgotPasswordStep0_legend", "Account")</legend>
+                    <table style="text-align:center; width:100%; table-layout:fixed">
+                        <tr>
+                            <td>@Html.TextBoxFor(model => model.Email, new { placeholder = Html.DisplayNameFor(model => model.Email), @class = "rounded", style = "width:70%", id = "email_textBox2" })</td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+            <div id="tabs-1">
+                <fieldset style="width:90%; margin:0 auto;">
+                    <legend id="forgotPasswordStep1_legend">@MvcApplication.GetDisplayNameFor("forgotPasswordStep1_legend", "Account")</legend>
+                    <table style="text-align:center; width:100%; table-layout:fixed">
+                        <tr>
+                            <td><input type="text" class="rounded" style="width:70%" placeholder="@MvcApplication.GetDisplayNameFor("passwordResetToken_textBox", "Account")" id = "passwordResetToken_textBox" /></td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+            <div id="tabs-2">
+                <fieldset style="width:90%; margin:0 auto;">
+                    <legend id="forgotPasswordStep2_legend">@MvcApplication.GetDisplayNameFor("forgotPasswordStep2_legend", "Account")</legend>
+                    <table style="text-align:center; width:100%; table-layout:fixed">
+                        <tr>
+                            <td style="text-align:center;font-size:14px;font-weight:bold" id="securityQuestion_textBox"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" class="rounded" style="width:70%" placeholder="@MvcApplication.GetDisplayNameFor("securityAnswer_textBox", "Account")" id="securityAnswer_textBox" /></td>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+        </div>
+
+@section Styles {
+        @Styles.Render("~/Content/themes/base/css")
+        <link rel="stylesheet" type="text/css" href="~/Content/themes/base/zocial.css" />
+}
+
+@section Scripts {
+        @Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/jqueryui")
+        @Scripts.Render("~/bundles/jqueryvalidation")
+        <script>
+            $(document).ready(function () {
+                $.ajaxSetup({ cache: true });
+                $.getScript('//connect.facebook.net/en_UK/all.js', function () {
+                    FB.init({
+                        appId: '166567716854792',
+                        channelUrl: '//localhost:21843/fbchannel.ashx',
+                    });
+
+                    $('#fbButton').click(function () {
+                        FB.getLoginStatus(function (response) {
+                            if (response.authResponse) {
+                                FbServerAuth(response);
+                            }
+                            else {
+                                FB.login(function (response) {
+                                    if (response.authResponse) {
+                                        FbServerAuth(response);
+                                    } else {
+                                        console.log('User cancelled login or did not fully authorize');
+                                    }
+                                }, { scope: 'email, user_birthday' });
+                            }
+                        }, true);
+                    });
+
+                    function FbServerAuth(response) {
+                        $.ajax({
+                            type: "POST",
+                            traditional: true,
+                            url: "@Url.Action("FacebookLoginCallback", "Account")",
+                            data: { accessToken: response.authResponse.accessToken },
+                            success: function (data, textStatus, jqXHR) {
+                                if (textStatus == "success") {
+                                    if (data.redirect)
+                                        window.location = data.url;
+                                }
+                                else {
+                                    throw ErrorEvent();
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+        <script>
+            $(function () {
+                $("#forgotPassword_tabs").dialog({
+                    autoOpen: false, resizable: false,
+                    height: 300, width: 550, modal: true,
+                    buttons: [
+                        {
+                            text: "@MvcApplication.GetDisplayNameFor("passwordReset_nextButton", "Account")",
+                            click: function () {
+                                var active = $("#forgotPassword_tabs").tabs("option", "active");
+                                switch (active.toString()) {
+                                    case "0": {
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "@Url.Action("ForgotPassword", "Account")",
+                                            data: { step: active, email: $("#email_textBox2").val() },
+                                            traditional: true,
+                                            success: function (data, textStatus, jqXHR) {
+                                                if (textStatus == "success") {
+                                                    var status = data.status;
+                                                    if (status == "success") {
+                                                        $("#forgotPassword_tabs").tabs({ disabled: [0, 2] });
+                                                        $("#forgotPassword_tabs").tabs({ active: 1 });
+                                                    }
+                                                    else {
+                                                        alert(data.reason);
+                                                    }
+                                                }
+                                                else {
+                                                    throw ErrorEvent();
+                                                }
+                                            }
+                                        })
+                                    } break;
+                                    case "1": {
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "@Url.Action("ForgotPassword", "Account")",
+                                            data: { step: active, email: $("#email_textBox2").val(), code: $("#passwordResetToken_textBox").val() },
+                                            traditional: true,
+                                            success: function (data, textStatus, jqXHR) {
+                                                if (textStatus == "success") {
+                                                    var status = data.status;
+                                                    if (status == "success") {
+                                                        $(".forgotPassword_dialog .ui-button-text:contains(@MvcApplication.GetDisplayNameFor("passwordReset_nextButton", "Account"))").text('@MvcApplication.GetDisplayNameFor("passwordReset_finalButton", "Account")');
+                                                        $("#securityQuestion_textBox").text(data.securityQuestion);
+                                                        $("#forgotPassword_tabs").tabs({ disabled: [0, 1] });
+                                                        $("#forgotPassword_tabs").tabs({ active: 2 });
+                                                    }
+                                                    else {
+                                                        alert(data.reason);
+                                                    }
+                                                }
+                                                else {
+                                                    throw ErrorEvent();
+                                                }
+                                            }
+                                        })
+                                    } break;
+                                    case "2": {
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "@Url.Action("ForgotPassword", "Account")",
+                                            data: { step: active, email: $("#email_textBox2").val(), answer: $("#securityAnswer_textBox").val() },
+                                            traditional: true,
+                                            success: function (data, textStatus, jqXHR) {
+                                                if (textStatus == "success") {
+                                                    var status = data.status;
+                                                    if (status == "success") {
+                                                        $("#forgotPassword_tabs").dialog("close");
+                                                        alert('@MvcApplication.GetDisplayNameFor("passwordReset_successful", "Account")');
+                                                    }
+                                                    else {
+                                                        alert(data.reason);
+                                                    }
+                                                }
+                                                else {
+                                                    throw ErrorEvent();
+                                                }
+                                            }
+                                        })
+                                    } break;
+                                }
+                            }
+                        },
+                        {
+                            text: "@MvcApplication.GetDisplayNameFor("passwordReset_cancelButton", "Account")",
+                            click: function () { $(this).closest('.ui-dialog-content').dialog('close'); }
+                        }
+                    ],
+                    dialogClass: 'forgotPassword_dialog'
+                });
+
+                $("#forgotPassword_tabs").tabs({ disabled: [1, 2] });
+                $("#forgotPassword_label")
+                    .mousedown(function () {
+                        $("#forgotPassword_tabs").dialog("open");
+                    });
+            });
+        </script>
+}
+

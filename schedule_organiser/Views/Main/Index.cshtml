@@ -1,0 +1,32 @@
+﻿@using schedule_organiser
+@{
+    ViewBag.Title = "Index";
+}
+        <header>
+            <p style="display:inline" id="welcome_text">@MvcApplication.GetDisplayNameFor("welcome_text", "Account")</p>
+            @Html.ActionLink(User.Identity.Name, "Manage", "Account", routeValues: null, htmlAttributes: new { @class = "username", title = "Manage" })!
+            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" })) {
+                @Html.AntiForgeryToken()
+                <a id="logoff_link" href="javascript:document.getElementById('logoutForm').submit()">@MvcApplication.GetDisplayNameFor("logoff_link", "Account")</a>
+            }
+        </header>
+
+        <input type="button" id="addEvent_button" value="Add event" />
+       
+
+@section Styles{
+
+}   
+
+@section Scripts{
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jqueryui_extensions")
+    <script>
+        $(function() {
+            $('#addEvent_button').click(function () {
+                alert("TEST");
+            });
+        });
+
+    </script>
+}
